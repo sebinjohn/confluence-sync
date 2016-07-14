@@ -58,6 +58,7 @@ data ConfluenceConfig = ConfluenceConfig {
 , syncSpaceKey  :: String
 , syncPageId    :: Maybe String
 , titleCaseConversion :: TitleCaseConversion
+, noDelete :: Bool
 } deriving Show
 
 -- Address of the XML-RPC Api root
@@ -412,7 +413,7 @@ sync throttle config path = do
       let titlesToUpdate = titlesToCreate `Set.union` (Set.fromList (snd `fmap` renames)) `Set.union` (Set.fromList (extractLocalName `fmap` matchedPages))
 
       -- The titles to remove are all remote pages which we are not going to update, and which are not being renamed, or already deleted.
-      let titlesToRemove = (remoteTitles `Set.difference` titlesToUpdate) `Set.difference` (Map.keysSet renameMap) `Set.difference` titlesAlreadyDeleted
+      let titlesToRemove = (remoteTitles `Set.difference` titlesToUpdate) `Set.difference` (Map.keysSet renameMap) `Set.difference` titlesAlreadyDeleted if not noDelete else None
 
       -- Log the page-level actions that will be taken.
       liftIO $ putStrLn $ "Pages to create: " ++ (if (Set.null titlesToCreate) then "none." else "")

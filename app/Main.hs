@@ -21,6 +21,7 @@ data CommandLineArguments = CommandLineArguments {
 , argsRequestBackoff    :: Rational
 , argsActionLimit       :: Int
 , argsPreserveCase      :: Bool
+, argsNoDelete          :: Bool
 , argsSyncDirectory     :: String
 }
 
@@ -78,6 +79,11 @@ commandLineArguments = CommandLineArguments
         <> help "Preserves the case of each word in a filename that contains capitals."
         <> (value False)
         ))
+   <*> ((option auto)
+          (long "no-delete"
+        <> help "Do not delete existing pages"
+        <> (value True)
+        ))
    <*> argument str
           (metavar "<SYNC DIRECTORY>"
         <> help "Directory containing the website/content to sync to Confluence")
@@ -96,7 +102,8 @@ main = do
   putStrLn $ "Using Confluence URL: " ++ confluenceUrl
   putStrLn $ "Using user: " ++ username
   let caseHandling = if (argsPreserveCase args) then PreserveIfContainsCapitals else TitleCase
-  let config = ConfluenceConfig username password confluenceUrl (argsPageTitle args) (argsSpaceKey args) (argsPageId args) caseHandling
+  let noDelete = if (argsNoDelete args) then True else False
+  let config = ConfluenceConfig username password confluenceUrl (argsPageTitle args) (argsSpaceKey args) (argsPageId args) caseHandling noDelete
   sync throttle config (argsSyncDirectory args)
   return ()
 
